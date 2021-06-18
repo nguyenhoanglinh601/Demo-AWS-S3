@@ -14,6 +14,12 @@ using System.Threading.Tasks;
 
 namespace AWS_S3_2.Services.Implements
 {
+    public enum DocumentType
+    {
+        Booking = 1,
+        ChargeBehalf = 2,
+        Maintenance = 3
+    }
     public class AWSS3Service : IAWSS3Service
     {
         public readonly AmazonS3Client _client;
@@ -41,12 +47,14 @@ namespace AWS_S3_2.Services.Implements
         //    return response;
         //}
 
-        public async Task<AWSS3ObjectResponse> getObjectAsync(string fileName)
+        public async Task<AWSS3ObjectResponse> getObjectAsync(string fileKey, int type)
         {
+            string stringType = ((DocumentType)type).ToString();
+
             var request = new GetObjectRequest()
             {
-                BucketName = "etms-test",
-                Key = fileName,
+                BucketName = "etms-test/"+stringType,
+                Key = fileKey,
             };
 
             GetObjectResponse response = await _client.GetObjectAsync(request);
@@ -63,17 +71,27 @@ namespace AWS_S3_2.Services.Implements
                 return null;
         }
 
-        public async Task<PutObjectResponse> postObjectAsync(IFormFile file)
+        public async Task<PutObjectResponse> postObjectAsync(IFormFile file, int type)
         {
+            string stringType = ((DocumentType)type).ToString();
+
             var putRequest = new PutObjectRequest()
             {
-                BucketName = "etms-test/folder-3",
-                Key = "test-key",
+                BucketName = "etms-test/" + stringType,
+                Key = file.FileName, //change key = identity key => database
                 InputStream = file.OpenReadStream(),
                 ContentType = file.ContentType,
             };
             var result = await _client.PutObjectAsync(putRequest);
-            return result;
+
+            if(result.HttpStatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return result;
+            }
+            else
+            {
+                return null;
+            }
         }
 
     }

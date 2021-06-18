@@ -20,18 +20,25 @@ namespace AWS_S3_2.Controllers
 
         [Route("postObject")]
         [HttpPost]
-        public async Task<IActionResult> postObject(IFormFile file)
+        public async Task<IActionResult> postObject(IFormFile file, int type)
         {
-            return Ok(await _service.postObjectAsync(file));
+            try
+            {
+                return Ok(await _service.postObjectAsync(file, type));
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         [Route("getObject")]
         [HttpGet]
-        public async Task<IActionResult> getObject(string fileName)
+        public async Task<IActionResult> getObject(string fileKey, int type)
         {
             try
             {
-                var ObjResult = await _service.getObjectAsync(fileName);
+                var ObjResult = await _service.getObjectAsync(fileKey, type);
                 return File(ObjResult.Result, ObjResult.Extenstion);
             }
             catch
